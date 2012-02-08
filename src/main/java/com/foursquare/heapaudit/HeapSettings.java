@@ -65,6 +65,8 @@ class HeapSettings {
         HeapSettings.dynamic = dynamic;
 
         toAvoidAuditing.clear();
+        
+        toIncludeAuditing.clear();
 
         toDebugAuditing.clear();
 
@@ -89,6 +91,13 @@ class HeapSettings {
                                              new Pattern("oracle/.+"),
                                              new Pattern("jrockit/.+")));
 
+        // actually do transform these classes, despite the matches in toAvoidAuditing
+        toIncludeAuditing.addAll(Arrays.asList(new Pattern("java/util/.*Map*"),
+                                               new Pattern("java/util/.*Set.*"),
+                                               // if we xform ArrayList, we'll stack-overflow because we use it in HeapAudit
+//                                               new Pattern("java/util/.*List.*"),
+                                               new Pattern("java/util/concurrent/.+")));
+                
         if (args != null) {
 
             for (String arg: args.split("[ #]")) {
@@ -179,6 +188,9 @@ class HeapSettings {
 
     private final static ArrayList<Pattern> toAvoidAuditing = new ArrayList<Pattern>();
 
+    // override avoidance
+    private final static ArrayList<Pattern> toIncludeAuditing = new ArrayList<Pattern>();
+
     private final static ArrayList<Pattern> toDebugAuditing = new ArrayList<Pattern>();
 
     private final static ArrayList<Pattern> toTraceAuditing = new ArrayList<Pattern>();
@@ -216,7 +228,10 @@ class HeapSettings {
 
         return should(toAvoidAuditing,
                       classPath,
-                      methodName);
+                      methodName) &&
+            (! should(toIncludeAuditing,
+                      classPath,
+                      methodName));
 
     }
 
