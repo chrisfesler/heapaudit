@@ -72,10 +72,39 @@ public abstract class HeapRecorder {
 
     };
 
+    // This is a per thread status to ignore allocations performed within the
+    // hasRecorders code path
+
+    private static ThreadLocal<Integer> checkingRecorders = new ThreadLocal<Integer>() {
+
+        @Override protected Integer initialValue() {
+
+            return 0;
+
+        }
+
+    };
+
     public static boolean hasRecorders() {
 
-        return (localRecorders.get().size() > 0) || (globalRecorders.size() > 0);
+        boolean hasLocal = false;
 
+        // The following suppresses recording of allocations due to the
+        // HeapAudit library itself to avoid being caught in an infinite loop.
+
+        int index = checkingRecorders.get();
+
+        checkingRecorders.set(index + 1);
+        
+        if (index == 0) {
+
+            hasLocal = localRecorders.get().size() > 0;
+            
+        }
+
+        checkingRecorders.set(index);
+        
+        return hasLocal || (globalRecorders.size() > 0);
     }
 
     public static ArrayList<HeapRecorder> getRecorders() {
