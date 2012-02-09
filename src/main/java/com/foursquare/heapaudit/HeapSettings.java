@@ -92,11 +92,12 @@ class HeapSettings {
                                              new Pattern("jrockit/.+")));
 
         // actually do transform these classes, despite the matches in toAvoidAuditing
-        toIncludeAuditing.addAll(Arrays.asList(new Pattern("java/util/.*Map*"),
-                                               new Pattern("java/util/.*Set.*"),
-                                               // if we xform ArrayList, we'll stack-overflow because we use it in HeapAudit
-//                                               new Pattern("java/util/.*List.*"),
-                                               new Pattern("java/util/concurrent/.+")));
+
+        toIncludeAuditing.addAll(Arrays.asList(new Pattern("java/util/.+")
+                                               // what can safely go here? It's unknown, but
+                                               // java/.+ causes all kinds of trouble. It's not
+                                               // actually known that java/util/.+ is safe
+                                               ));
                 
         if (args != null) {
 
