@@ -86,6 +86,22 @@ public abstract class HeapUtil {
 
     private static ConcurrentHashMap<String, Long> sizes = new ConcurrentHashMap<String, Long>();
 
+    // This is a per thread status to ignore allocations performed within the
+    // sizeOf code path. Unfortunately, we can't rely on disableRecording because
+    // the various sizeOf calls happen previous to the call to the primary record
+    // method, which is where notification of the recorders is prevented if
+    // recording is non-zero.
+
+    private static ThreadLocal<Integer> cachingSize = new ThreadLocal<Integer>() {
+
+        @Override protected Integer initialValue() {
+
+            return 0;
+
+        }
+
+    };
+
     private static long sizeOf(Object obj,
                                String type) {
 
@@ -95,8 +111,21 @@ public abstract class HeapUtil {
 
             size = HeapRecorder.instrumentation.getObjectSize(obj);
 
-            sizes.put(type,
+            // The following suppresses recording of allocations due to the
+            // HeapAudit library itself to avoid being caught in an infinite loop.
+
+            int index = cachingSize.get();
+
+            cachingSize.set(index + 1);
+
+            if (index == 0) {
+
+                sizes.put(type,
                       size);
+
+            }
+
+            cachingSize.set(index);
 
         }
 
@@ -121,6 +150,12 @@ public abstract class HeapUtil {
                               int count,
                               String type,
                               long size) {
+
+        // Avoid recording allocations due to our caching of sizes.
+
+        if (cachingSize.get() != 0) {
+            return;
+        }
 
         // The following suppresses recording of allocations due to the
         // HeapAudit library itself to avoid being caught in an infinite loop.
@@ -264,7 +299,7 @@ public abstract class HeapUtil {
                count,
                type,
                sizeOf(obj,
-		      "" + count + "[" + type));
+              "" + count + "[" + type));
 
     }
 
