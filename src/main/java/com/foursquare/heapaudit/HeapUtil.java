@@ -206,8 +206,14 @@ public abstract class HeapUtil {
                     // is only affected by the number of elements, not the
                     // actual element type.
 
+                    int index = disableRecording();
+
+                    String typeArg = "" + length + "[[L";
+
+                    enableRecording(index);
+
                     overhead += sizeOf(o,
-                                       "" + length + "[[L");
+                                       typeArg);
 
                     switch (type.charAt(i + 1)) {
 
@@ -278,11 +284,17 @@ public abstract class HeapUtil {
                 }
                 else {
 
+                    int index = disableRecording();
+
+                    String typeArg = "" + length + type.substring(i - 1);
+
+                    enableRecording(index);
+
                     record(obj,
                            count * length,
                            type.substring(i),
                            overhead + count * sizeOf(o[0],
-                                                     "" + length + type.substring(i - 1)));
+                                   typeArg));
 
                     break;
                 }
@@ -295,11 +307,17 @@ public abstract class HeapUtil {
 
     public static void record(Object obj, int count, String type) {
 
+        int index = disableRecording();
+
+        String typeArg = "" + count + "[" + type;
+
+        enableRecording(index);
+
         record(obj,
                count,
                type,
                sizeOf(obj,
-              "" + count + "[" + type));
+                      typeArg));
 
     }
 
@@ -323,8 +341,14 @@ public abstract class HeapUtil {
                 // the overhead of the array bookkeeping itself is only affected
                 // by the number of elements, not the actual element type.
 
+                int index = disableRecording();
+
+                String typeArg = "" + length + "[[L";
+
+                enableRecording(index);
+
                 overhead += sizeOf(o,
-                                   "" + length + "[[L");
+                                   typeArg);
 
                 o = (Object[])(o[0]);
 
@@ -338,11 +362,17 @@ public abstract class HeapUtil {
 
             int length = dimensions[dimensions.length - 1];
 
+            int index = disableRecording();
+
+            String typeArg = "" + length + "[" + type;
+
+            enableRecording(index);
+
             record(obj,
                    count * length,
                    type,
                    overhead + count * sizeOf(o,
-                                             "" + length + "[" + type));
+                                             typeArg));
 
         }
 
@@ -434,4 +464,34 @@ public abstract class HeapUtil {
 
     }
 
+    /**
+     * Stop all recording. Invoke prior to doing anything in HeapRecorder that will allocate
+     * in order to prevent HeapRecorder's own allocations from being counted.
+     *
+     * Be sure to reenable recording after your allocations by calling enableRecording, passing
+     * the value returned by this method.
+     *
+     * @return index, pass back to enableRecording.
+     */
+    private static int disableRecording() {
+        
+        int index = recording.get();
+        
+        recording.set(index + 1);
+        
+        return index;
+
+    }
+
+    /**
+     * Use in tandem with disableRecording, to exclude some allocations from
+     * being counted.
+     *
+     * @param index the value returned by the corresponding call to disableRecording
+     */
+    private static void enableRecording(int index) {
+        
+        recording.set(index);
+
+    }
 }
