@@ -1,6 +1,8 @@
 package com.foursquare.heapaudit.test;
 
 import com.foursquare.heapaudit.HeapRecorder;
+import com.foursquare.heapaudit.HeapUtil;
+
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class TestUtil {
@@ -19,6 +21,8 @@ public class TestUtil {
     }
 
     public void clear() {
+
+    HeapUtil.clearSizeCache();
 
 	recorder.clear();
 

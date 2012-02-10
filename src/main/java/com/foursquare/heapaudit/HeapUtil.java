@@ -92,6 +92,12 @@ public abstract class HeapUtil {
     // method, which is where notification of the recorders is prevented if
     // recording is non-zero.
 
+    public static void clearSizeCache() {
+
+        sizes.clear();
+
+    }
+
     private static ThreadLocal<Integer> cachingSize = new ThreadLocal<Integer>() {
 
         @Override protected Integer initialValue() {
