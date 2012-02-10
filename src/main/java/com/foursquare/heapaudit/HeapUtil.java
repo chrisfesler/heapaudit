@@ -479,7 +479,7 @@ public abstract class HeapUtil {
      *
      * @return index, pass back to enableRecording.
      */
-    private static int disableRecording() {
+    /* package */ static int disableRecording() {
         
         int index = recording.get();
         
@@ -495,7 +495,7 @@ public abstract class HeapUtil {
      *
      * @param index the value returned by the corresponding call to disableRecording
      */
-    private static void enableRecording(int index) {
+    /* package */ static void enableRecording(int index) {
         
         recording.set(index);
 

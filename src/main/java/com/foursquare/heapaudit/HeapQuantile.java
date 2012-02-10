@@ -337,52 +337,64 @@ public class HeapQuantile extends HeapRecorder {
     public ArrayList<Stats> tally(boolean global,
                                   boolean sorted) {
 
-        Quantiles qType = new Quantiles();
+        int index = HeapUtil.disableRecording();
 
-        Quantiles qArray = new Quantiles();
+        try {
 
-        if (global) {
+            Quantiles qType = new Quantiles();
 
-            for (Quantiles quantiles: statsType) {
+            Quantiles qArray = new Quantiles();
+
+            if (global) {
+
+                for (Quantiles quantiles: statsType) {
+
+                    merge(qType,
+                          quantiles);
+
+                }
+
+                for (Quantiles quantiles: statsArray) {
+
+                    merge(qArray,
+                          quantiles);
+
+                }
+
+            }
+            else {
 
                 merge(qType,
-                      quantiles);
-
-            }
-
-            for (Quantiles quantiles: statsArray) {
+                      stats.get().quantilesType);
 
                 merge(qArray,
-                      quantiles);
+                      stats.get().quantilesArray);
 
             }
 
-        }
-        else {
+            ArrayList<Stats> sQuantiles = new ArrayList<Stats>();
 
-            merge(qType,
-                  stats.get().quantilesType);
+            flatten(sQuantiles,
+                    qType);
 
-            merge(qArray,
-                  stats.get().quantilesArray);
+            flatten(sQuantiles,
+                    qArray);
 
-        }
+            if (sorted) {
 
-        ArrayList<Stats> sQuantiles = new ArrayList<Stats>();
+                Collections.sort(sQuantiles);
 
-        flatten(sQuantiles,
-                qType);
+            }
 
-        flatten(sQuantiles,
-                qArray);
-
-        if (sorted) {
-
-            Collections.sort(sQuantiles);
+            return sQuantiles;
 
         }
 
-        return sQuantiles;
+        finally {
+
+            HeapUtil.enableRecording(index);
+
+        }
 
     }
 
