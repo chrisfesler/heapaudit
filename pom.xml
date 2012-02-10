@@ -102,7 +102,7 @@
               <goal>verify</goal>
             </goals>
             <configuration>
-              <argLine>-javaagent:${project.build.directory}/${artifactId}-${version}.jar="-Xconditional -Aorg/apache/maven/.+ -Ajunit/.+ -Aorg/junit/.+"</argLine>
+              <argLine>-Xbootclasspath/a:${project.build.directory}/${artifactId}-${version}.jar -javaagent:${project.build.directory}/${artifactId}-${version}.jar="-Xconditional -Aorg/apache/maven/.+ -Ajunit/.+ -Aorg/junit/.+"</argLine>
               <workingDirectory>${project.build.directory}</workingDirectory>
               <includes>
                 <include>**/Test*.java</include>
