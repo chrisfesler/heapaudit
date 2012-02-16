@@ -334,7 +334,7 @@ public class HeapQuantile extends HeapRecorder {
     // The following tallies the quantile statistics across all threads.
     // NOTE: Partial records due to in-flight allocations may occur.
 
-    public ArrayList<Stats> tally(boolean global,
+    @HeapRecorder.Suppress public ArrayList<Stats> tally(boolean global,
                                   boolean sorted) {
 
         Quantiles qType = new Quantiles();
